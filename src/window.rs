@@ -49,7 +49,7 @@ impl Window {
         w.make_current();
         w.set_all_polling(true);
 
-        Window {
+        Self {
             handle: w,
             events: e,
         }
