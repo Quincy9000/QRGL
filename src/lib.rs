@@ -1,8 +1,6 @@
-#![feature(trivial_bounds)]
+#![allow(unused)]
+#![allow(incomplete_features)]
 #![feature(generic_const_exprs)]
-#![feature(adt_const_params)]
-#![feature(const_generics_defaults)]
-#![feature(generic_arg_infer)]
 
 mod math;
 mod window;

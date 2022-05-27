@@ -1,3 +1,8 @@
+/// ***************
+/// ***************
+/// Crate
+/// ***************
+/// ***************
 use std::{
     fmt::Debug,
     ops::{Index, IndexMut, Neg},
@@ -19,10 +24,11 @@ pub type Vec2d = Vector<f64, 2>;
 pub type Vec3d = Vector<f64, 3>;
 pub type Vec4d = Vector<f64, 4>;
 
-pub struct X;
-pub struct Y;
-pub struct Z;
-pub struct W;
+/// ***************
+/// ***************
+/// Vector Consts
+/// ***************
+/// ***************
 
 pub mod vec2 {
     use super::*;
@@ -41,6 +47,24 @@ pub mod vec3 {
     pub const FWD3: Vec3 = Vec3 { v: [0., 0., 1.] };
     pub const BACK3: Vec3 = Vec3 { v: [0., 0., -1.] };
 }
+
+/// ***********************************************************************************
+/// ***********************************************************************************
+/// Dimension Selectors
+/// Used to index into the vec types because they are stored internally as arrays
+/// ***********************************************************************************
+/// ***********************************************************************************
+
+pub struct X;
+pub struct Y;
+pub struct Z;
+pub struct W;
+
+/// ***********
+/// ***********
+/// Traits
+/// ***********
+/// ***********
 
 trait True {}
 
@@ -82,12 +106,31 @@ pub trait Zero {
     fn zero() -> Self;
 }
 
+/// ******************************************************
+/// ******************************************************
+/// Const Generic Expressions Helper
+/// Used to make it able to say impl if N > 0...etc
+/// ******************************************************
+/// ******************************************************
+
 struct If<const B: bool>;
 impl True for If<true> {}
+
+/// ***************************
+/// ***************************
+/// One True Vector struct
+/// ***************************
+/// ***************************
 
 pub struct Vector<T, const N: usize> {
     v: [T; N],
 }
+
+/// **********
+/// **********
+/// Impls
+/// **********
+/// **********
 
 impl<T, const N: usize> Debug for Vector<T, N>
 where
@@ -329,6 +372,12 @@ impl<T, const N: usize> Vector<T, N> {
         N
     }
 }
+
+/// *********
+/// *********
+/// Tests
+/// *********
+/// *********
 
 #[test]
 fn test_2d() {
