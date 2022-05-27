@@ -220,8 +220,8 @@ fn test_2d() {
     let v2 = Vec2::right();
     let v3 = Vec2::up();
     let v4 = Vec2::down();
-    let v5 = Vec2::fwd();
-    let v6 = Vec2::back();
+    // let v5 = Vec2::fwd();
+    // let v6 = Vec2::back();
     println!("{:?}", v);
     println!("{:?}", v2);
 }
