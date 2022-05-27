@@ -1,4 +1,46 @@
-use std::fmt::Debug;
+use std::{
+    fmt::Debug,
+    ops::{Index, Neg},
+};
+
+pub type Vec2b = Vector<bool, 2>;
+pub type Vec3b = Vector<bool, 3>;
+pub type Vec4b = Vector<bool, 4>;
+
+pub type Vec2i = Vector<i32, 2>;
+pub type Vec3i = Vector<i32, 3>;
+pub type Vec4i = Vector<i32, 4>;
+
+pub type Vec2 = Vector<f32, 2>;
+pub type Vec3 = Vector<f32, 3>;
+pub type Vec4 = Vector<f32, 4>;
+
+pub type Vec2d = Vector<f64, 2>;
+pub type Vec3d = Vector<f64, 3>;
+pub type Vec4d = Vector<f64, 4>;
+
+pub struct X;
+pub struct Y;
+pub struct Z;
+pub struct W;
+
+pub mod vec2 {
+    use super::*;
+    pub const LEFT2: Vec2 = Vec2 { v: [-1., 0.] };
+    pub const RIGHT2: Vec2 = Vec2 { v: [1., 0.] };
+    pub const UP2: Vec2 = Vec2 { v: [0., 1.] };
+    pub const DOWN2: Vec2 = Vec2 { v: [0., -1.] };
+}
+
+pub mod vec3 {
+    use super::*;
+    pub const LEFT3: Vec3 = Vec3 { v: [-1., 0., 0.] };
+    pub const RIGHT3: Vec3 = Vec3 { v: [1., 0., 0.] };
+    pub const UP3: Vec3 = Vec3 { v: [0., 1., 0.] };
+    pub const DOWN3: Vec3 = Vec3 { v: [0., -1., 0.] };
+    pub const FWD3: Vec3 = Vec3 { v: [0., 0., 1.] };
+    pub const BACK3: Vec3 = Vec3 { v: [0., 0., -1.] };
+}
 
 trait True {}
 
@@ -28,35 +70,20 @@ pub trait Down {
 
 pub trait FirstDimension: Left + Right {}
 
-pub trait SecondDimension: FirstDimension + Up + Down {}
+pub trait SecondDimension: Left + Right + Up + Down {}
 
-pub trait ThirdDimension: SecondDimension + Forward + Backward {}
+pub trait ThirdDimension: Left + Right + Up + Down + Forward + Backward {}
 
-pub trait One {
+pub trait One: Neg<Output = Self> {
     fn one() -> Self;
 }
 
 pub trait Zero {
     fn zero() -> Self;
 }
+
 struct If<const B: bool>;
 impl True for If<true> {}
-
-pub type Vec2b = Vector<bool, 2>;
-pub type Vec3b = Vector<bool, 3>;
-pub type Vec4b = Vector<bool, 4>;
-
-pub type Vec2i = Vector<i32, 2>;
-pub type Vec3i = Vector<i32, 3>;
-pub type Vec4i = Vector<i32, 4>;
-
-pub type Vec2 = Vector<f32, 2>;
-pub type Vec3 = Vector<f32, 3>;
-pub type Vec4 = Vector<f32, 4>;
-
-pub type Vec2d = Vector<f64, 2>;
-pub type Vec3d = Vector<f64, 3>;
-pub type Vec4d = Vector<f64, 4>;
 
 pub struct Vector<T, const N: usize> {
     v: [T; N],
@@ -95,11 +122,62 @@ impl One for f32 {
     }
 }
 
-impl<T, const N: usize> FirstDimension for Vector<T, N>
+// impl<T, const N: usize> FirstDimension for Vector<T, N>
+// where
+//     If<{ N > 0 }>: True,
+//     T: Default + Copy + Zero + One,
+// {
+// }
+
+// impl<T, const N: usize> SecondDimension for Vector<T, N>
+// where
+//     If<{ N > 1 }>: True,
+//     T: Default + Copy + Zero + One,
+// {
+// }
+
+impl<T, const N: usize> Index<X> for Vector<T, N>
 where
     If<{ N > 0 }>: True,
-    T: Default + Copy + Zero + One,
 {
+    type Output = T;
+
+    fn index(&self, _: X) -> &Self::Output {
+        &self.v[0]
+    }
+}
+
+impl<T, const N: usize> Index<Y> for Vector<T, N>
+where
+    If<{ N > 1 }>: True,
+{
+    type Output = T;
+
+    fn index(&self, _: Y) -> &Self::Output {
+        &self.v[1]
+    }
+}
+
+impl<T, const N: usize> Index<Z> for Vector<T, N>
+where
+    If<{ N > 2 }>: True,
+{
+    type Output = T;
+
+    fn index(&self, _: Z) -> &Self::Output {
+        &self.v[2]
+    }
+}
+
+impl<T, const N: usize> Index<W> for Vector<T, N>
+where
+    If<{ N > 3 }>: True,
+{
+    type Output = T;
+
+    fn index(&self, _: W) -> &Self::Output {
+        &self.v[3]
+    }
 }
 
 impl<T, const N: usize> Left for Vector<T, N>
@@ -109,10 +187,8 @@ where
 {
     fn left() -> Self {
         let mut v = [T::default(); N];
-        v[0] = T::one();
-        Self {
-            v: [T::default(); N],
-        }
+        v[0] = -T::one();
+        Self { v }
     }
 }
 
@@ -124,9 +200,7 @@ where
     fn right() -> Self {
         let mut v = [T::default(); N];
         v[0] = T::one();
-        Self {
-            v: [T::default(); N],
-        }
+        Self { v }
     }
 }
 
@@ -137,10 +211,8 @@ where
 {
     fn up() -> Self {
         let mut v = [T::default(); N];
-        v[0] = T::one();
-        Self {
-            v: [T::default(); N],
-        }
+        v[1] = T::one();
+        Self { v }
     }
 }
 
@@ -151,10 +223,8 @@ where
 {
     fn down() -> Self {
         let mut v = [T::default(); N];
-        v[0] = T::one();
-        Self {
-            v: [T::default(); N],
-        }
+        v[1] = -T::one();
+        Self { v }
     }
 }
 
@@ -165,10 +235,8 @@ where
 {
     fn fwd() -> Self {
         let mut v = [T::default(); N];
-        v[0] = T::one();
-        Self {
-            v: [T::default(); N],
-        }
+        v[2] = T::one();
+        Self { v }
     }
 }
 
@@ -179,10 +247,8 @@ where
 {
     fn back() -> Self {
         let mut v = [T::default(); N];
-        v[0] = T::one();
-        Self {
-            v: [T::default(); N],
-        }
+        v[2] = -T::one();
+        Self { v }
     }
 }
 
@@ -224,6 +290,10 @@ fn test_2d() {
     // let v6 = Vec2::back();
     println!("{:?}", v);
     println!("{:?}", v2);
+    println!("{:?}", v3);
+    println!("{:?}", v4);
+
+    println!("X: {}, Y: {}, Z: N/A, W: N/A", v[X], v[Y]);
 }
 
 #[test]
@@ -236,4 +306,10 @@ fn test_3d() {
     let v6 = Vec3::back();
     println!("{:?}", v);
     println!("{:?}", v2);
+    println!("{:?}", v3);
+    println!("{:?}", v4);
+    println!("{:?}", v5);
+    println!("{:?}", v6);
+
+    println!("X: {}, Y: {}, Z: {}, W: N/A", v[X], v[Y], v[Z]);
 }
