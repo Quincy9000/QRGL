@@ -1,6 +1,6 @@
 use std::{
     fmt::Debug,
-    ops::{Index, Neg},
+    ops::{Index, IndexMut, Neg},
 };
 
 pub type Vec2b = Vector<bool, 2>;
@@ -136,6 +136,20 @@ impl One for f32 {
 // {
 // }
 
+impl<T, const N: usize> Index<usize> for Vector<T, N> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.v[index]
+    }
+}
+
+impl<T, const N: usize> IndexMut<usize> for Vector<T, N> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.v[index]
+    }
+}
+
 impl<T, const N: usize> Index<X> for Vector<T, N>
 where
     If<{ N > 0 }>: True,
@@ -177,6 +191,42 @@ where
 
     fn index(&self, _: W) -> &Self::Output {
         &self.v[3]
+    }
+}
+
+impl<T, const N: usize> IndexMut<X> for Vector<T, N>
+where
+    If<{ N > 0 }>: True,
+{
+    fn index_mut(&mut self, _: X) -> &mut Self::Output {
+        &mut self.v[0]
+    }
+}
+
+impl<T, const N: usize> IndexMut<Y> for Vector<T, N>
+where
+    If<{ N > 1 }>: True,
+{
+    fn index_mut(&mut self, _: Y) -> &mut Self::Output {
+        &mut self.v[1]
+    }
+}
+
+impl<T, const N: usize> IndexMut<Z> for Vector<T, N>
+where
+    If<{ N > 2 }>: True,
+{
+    fn index_mut(&mut self, _: Z) -> &mut Self::Output {
+        &mut self.v[2]
+    }
+}
+
+impl<T, const N: usize> IndexMut<W> for Vector<T, N>
+where
+    If<{ N > 3 }>: True,
+{
+    fn index_mut(&mut self, _: W) -> &mut Self::Output {
+        &mut self.v[3]
     }
 }
 
@@ -312,4 +362,22 @@ fn test_3d() {
     println!("{:?}", v6);
 
     println!("X: {}, Y: {}, Z: {}, W: N/A", v[X], v[Y], v[Z]);
+}
+
+#[test]
+fn test_4d() {
+    let v1 = Vec4::left();
+    let v2 = Vec4::right();
+    let v3 = Vec4::up();
+    let v4 = Vec4::down();
+    let v5 = Vec4::fwd();
+    let v6 = Vec4::back();
+    println!("{:?}", v1);
+    println!("{:?}", v2);
+    println!("{:?}", v3);
+    println!("{:?}", v4);
+    println!("{:?}", v5);
+    println!("{:?}", v6);
+
+    println!("X: {}, Y: {}, Z: {}, W: {}", v1[X], v1[Y], v1[Z], v1[W]);
 }
