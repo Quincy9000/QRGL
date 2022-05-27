@@ -1,3 +1,10 @@
+#![feature(trivial_bounds)]
+#![feature(generic_const_exprs)]
+#![feature(adt_const_params)]
+#![feature(const_generics_defaults)]
+#![feature(generic_arg_infer)]
+
+mod math;
 mod window;
 use window::*;
 
