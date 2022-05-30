@@ -40,7 +40,9 @@ impl DerefMut for Window {
 
 impl Window {
     pub fn new() -> Self {
-        let glfw = glfw::init(glfw::FAIL_ON_ERRORS).expect("Failed to init glfw");
+        let mut glfw = glfw::init(FAIL_ON_ERRORS).expect("Failed to init glfw");
+        glfw.window_hint(WindowHint::ContextVersionMajor(3));
+        glfw.window_hint(WindowHint::ContextVersionMinor(3));
 
         let (mut w, e) = glfw
             .create_window(800, 600, "Q", WindowMode::Windowed)
@@ -48,6 +50,8 @@ impl Window {
 
         w.make_current();
         w.set_all_polling(true);
+
+        gl::load_with(|s| w.get_proc_address(s));
 
         Self {
             handle: w,

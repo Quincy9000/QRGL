@@ -3,19 +3,51 @@
 #![feature(generic_const_exprs)]
 
 mod math;
+mod render;
 mod window;
+use render::{basic_shaders, ogl::*};
 use window::*;
 
 #[test]
 fn test_window() {
-    let mut w = window::Window::new();
+    let mut window = window::Window::new();
 
-    while !w.should_close() {
-        w.swap_buffers();
-        while let Some(e) = w.events() {
+    let mut vao = Vao::new();
+    vao.bind();
+    let mut vbo = Vbo::new();
+    #[rustfmt::skip]
+    vbo.set_data(&[
+        // first 3 are pos, second 3 are color data
+        -0.5f32,  -0.5f32, 0f32, /**/   0f32,  1f32, 0f32,
+         0f32,     0.5f32, 0f32, /**/   1f32,  0f32, 0f32,
+         0.5f32,  -0.5f32, 0f32, /**/   0f32,  0f32, 1f32,
+    ]);
+    vao.add_attribute(&VertexPosInfo);
+    vao.add_attribute(&VertexColorInfo);
+
+    let mut shader_builder = ShaderBuilder::new();
+    shader_builder.add_shader(basic_shaders::BASIC_VERTEX, ShaderType::Vertex);
+    shader_builder.add_shader(basic_shaders::BASIC_FRAG, ShaderType::Fragment);
+
+    let shader = shader_builder.build();
+    shader.bind();
+
+    while !window.should_close() {
+        window.swap_buffers();
+
+        while let Some(e) = window.events() {
             if e.is_key_pressed(Key::Escape) {
-                w.set_should_close(true);
+                window.set_should_close(true);
+            }
+
+            if let WindowEvent::Size(x, y) = e.events {
+                println!("resized");
+                unsafe {
+                    gl::Viewport(0, 0, x, y);
+                }
             }
         }
+
+        draw();
     }
 }
