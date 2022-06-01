@@ -9,6 +9,8 @@ use std::{
     process::Output,
 };
 
+use crate::render::ogl::Uniform;
+
 pub type Vec2b = Vector<bool, 2>;
 pub type Vec3b = Vector<bool, 3>;
 pub type Vec4b = Vector<bool, 4>;
@@ -20,6 +22,10 @@ pub type Vec4i = Vector<i32, 4>;
 pub type Vec2 = Vector<f32, 2>;
 pub type Vec3 = Vector<f32, 3>;
 pub type Vec4 = Vector<f32, 4>;
+
+pub type Vec2f = Vector<f32, 2>;
+pub type Vec3f = Vector<f32, 3>;
+pub type Vec4f = Vector<f32, 4>;
 
 pub type Vec2d = Vector<f64, 2>;
 pub type Vec3d = Vector<f64, 3>;
@@ -461,8 +467,6 @@ impl<T, const N: usize> Vector<T, N> {
     pub const fn len() -> usize {
         N
     }
-
-    
 }
 
 /// *********
@@ -570,3 +574,23 @@ fn test_vec_div() {
     assert!(v3[X] == 6f32);
     assert!(v3[Y] == 5f32);
 }
+
+macro_rules! Uniform {
+    ($t:ty) => {
+        impl Uniform for $t {
+            fn apply_uniform(&mut self) {}
+        }
+    };
+}
+
+Uniform!(Vec2);
+Uniform!(Vec3);
+Uniform!(Vec4);
+
+Uniform!(Vec2d);
+Uniform!(Vec3d);
+Uniform!(Vec4d);
+
+Uniform!(Vec2i);
+Uniform!(Vec3i);
+Uniform!(Vec4i);

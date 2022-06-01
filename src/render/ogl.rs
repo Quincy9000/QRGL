@@ -3,6 +3,14 @@ use std::{
     mem::size_of,
 };
 
+pub trait Bindable {
+    fn bind(&self);
+}
+
+pub trait Uniform {
+    fn apply_uniform(&mut self);
+}
+
 use gl::*;
 
 pub struct Vbo {
@@ -192,6 +200,7 @@ impl ShaderBuilder {
             for s in &self.shaders {
                 gl::DeleteShader(*s);
             }
+
             self.shaders.clear();
         }
 
@@ -209,6 +218,22 @@ impl Shader {
     pub fn bind(&self) {
         unsafe {
             gl::UseProgram(self.program);
+        }
+    }
+
+    pub fn set_uniform<T: Uniform>(&mut self, name: &str, mut uniform: T) {
+        unsafe {
+            let a = CString::new(name).expect("Failed to make CString from uniform trait");
+            let loc = gl::GetUniformLocation(0, a.as_ptr());
+            uniform.apply_uniform();
+        }
+    }
+}
+
+impl Drop for Shader {
+    fn drop(&mut self) {
+        unsafe {
+            gl::DeleteProgram(self.program);
         }
     }
 }

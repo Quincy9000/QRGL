@@ -1,5 +1,6 @@
 pub const BASIC_VERTEX: &str = r"
 #version 330 core
+
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 color;
 
@@ -13,6 +14,7 @@ void main()
 
 pub const BASIC_FRAG: &str = r"
 #version 330 core
+
 in vec3 colorPos;
 out vec4 FragColor;
 
