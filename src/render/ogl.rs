@@ -8,7 +8,7 @@ pub trait Bindable {
 }
 
 pub trait Uniform {
-    fn apply_uniform(&mut self);
+    fn apply_uniform(&mut self, loc: i32);
 }
 
 use gl::*;
@@ -224,8 +224,8 @@ impl Shader {
     pub fn set_uniform<T: Uniform>(&mut self, name: &str, mut uniform: T) {
         unsafe {
             let a = CString::new(name).expect("Failed to make CString from uniform trait");
-            let loc = gl::GetUniformLocation(0, a.as_ptr());
-            uniform.apply_uniform();
+            let loc = gl::GetUniformLocation(self.program, a.as_ptr());
+            uniform.apply_uniform(loc);
         }
     }
 }

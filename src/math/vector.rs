@@ -467,6 +467,10 @@ impl<T, const N: usize> Vector<T, N> {
     pub const fn len() -> usize {
         N
     }
+
+    pub const fn as_array(&self) -> &[T; N] {
+        &self.v
+    }
 }
 
 /// *********
@@ -575,22 +579,62 @@ fn test_vec_div() {
     assert!(v3[Y] == 5f32);
 }
 
-macro_rules! Uniform {
-    ($t:ty) => {
-        impl Uniform for $t {
-            fn apply_uniform(&mut self) {}
-        }
-    };
+/// *******************
+/// *******************
+///   Uniform Impls
+/// *******************
+/// *******************
+
+impl Uniform for Vec2f {
+    fn apply_uniform(&mut self, loc: i32) {
+        unsafe { gl::Uniform2fv(loc, 1, self.as_array().as_ptr()) }
+    }
 }
 
-Uniform!(Vec2);
-Uniform!(Vec3);
-Uniform!(Vec4);
+impl Uniform for Vec2i {
+    fn apply_uniform(&mut self, loc: i32) {
+        unsafe { gl::Uniform2iv(loc, 1, self.as_array().as_ptr()) }
+    }
+}
 
-Uniform!(Vec2d);
-Uniform!(Vec3d);
-Uniform!(Vec4d);
+impl Uniform for Vec2d {
+    fn apply_uniform(&mut self, loc: i32) {
+        unsafe { gl::Uniform2dv(loc, 1, self.as_array().as_ptr()) }
+    }
+}
 
-Uniform!(Vec2i);
-Uniform!(Vec3i);
-Uniform!(Vec4i);
+impl Uniform for Vec3f {
+    fn apply_uniform(&mut self, loc: i32) {
+        unsafe { gl::Uniform3fv(loc, 1, self.as_array().as_ptr()) }
+    }
+}
+
+impl Uniform for Vec3i {
+    fn apply_uniform(&mut self, loc: i32) {
+        unsafe { gl::Uniform3iv(loc, 1, self.as_array().as_ptr()) }
+    }
+}
+
+impl Uniform for Vec3d {
+    fn apply_uniform(&mut self, loc: i32) {
+        unsafe { gl::Uniform3dv(loc, 1, self.as_array().as_ptr()) }
+    }
+}
+
+impl Uniform for Vec4f {
+    fn apply_uniform(&mut self, loc: i32) {
+        unsafe { gl::Uniform4fv(loc, 1, self.as_array().as_ptr()) }
+    }
+}
+
+impl Uniform for Vec4i {
+    fn apply_uniform(&mut self, loc: i32) {
+        unsafe { gl::Uniform4iv(loc, 1, self.as_array().as_ptr()) }
+    }
+}
+
+impl Uniform for Vec4d {
+    fn apply_uniform(&mut self, loc: i32) {
+        unsafe { gl::Uniform4dv(loc, 1, self.as_array().as_ptr()) }
+    }
+}
