@@ -1,7 +1,4 @@
-use std::{
-    ffi::{CStr, CString},
-    mem::size_of,
-};
+use std::ffi::{CStr, CString};
 
 pub trait Bindable {
     fn bind(&self);
@@ -12,6 +9,11 @@ pub trait Uniform {
 }
 
 use gl::*;
+
+use crate::math::vector::*;
+use crate::render::shaders;
+
+use crate::math::*;
 
 pub struct Vbo {
     id: u32,
@@ -104,12 +106,12 @@ impl VertexInfo for VertexColorInfo {
     }
 }
 
-pub struct Vao<'a> {
+pub struct Vao {
     id: u32,
-    info: Vec<&'a dyn VertexInfo>,
+    info: Vec<&'static dyn VertexInfo>,
 }
 
-impl<'a> Vao<'a> {
+impl Vao {
     pub fn new() -> Self {
         Self {
             id: unsafe {
@@ -125,7 +127,8 @@ impl<'a> Vao<'a> {
         unsafe { gl::BindVertexArray(self.id) }
     }
 
-    pub fn add_attribute<T: VertexInfo>(&mut self, data: &'a T) {
+    pub fn add_attribute<T: VertexInfo>(&mut self, data: &'static T) {
+        self.bind();
         self.info.push(data);
 
         let mut stride = 0;
@@ -247,10 +250,24 @@ impl Drop for Shader {
     }
 }
 
-pub fn draw() {
-    unsafe {
-        gl::ClearColor(0.0, 0.1, 0.2, 1f32);
-        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-        gl::DrawArrays(gl::TRIANGLES, 0, 3);
+pub struct Material {
+    vao: Vao,
+    shader: Shader,
+}
+
+impl Default for Material {
+    fn default() -> Self {
+        let mut vao = Vao::new();
+        vao.add_attribute(&VertexPosInfo);
+
+        let mut shader_builder = ShaderBuilder::new();
+        shader_builder.add_shader(shaders::SIMPLE_VERTEX);
+        shader_builder.add_shader(shaders::SIMPLE_FRAGMENT);
+
+        let mut shader = shader_builder.build();
+        shader.bind();
+        shader.set_uniform("color", vec3(0.0, 0.0, 0.0));
+
+        Self { vao, shader }
     }
 }

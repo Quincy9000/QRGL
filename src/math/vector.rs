@@ -31,6 +31,18 @@ pub type Vec2d = Vector<f64, 2>;
 pub type Vec3d = Vector<f64, 3>;
 pub type Vec4d = Vector<f64, 4>;
 
+pub fn vec2(x: f32, y: f32) -> Vec2 {
+    Vector { v: [x, y] }
+}
+
+pub fn vec3(x: f32, y: f32, z: f32) -> Vec3 {
+    Vector { v: [x, y, z] }
+}
+
+pub fn vec4(x: f32, y: f32, z: f32, w: f32) -> Vec4 {
+    Vector { v: [x, y, z, w] }
+}
+
 /// *******************
 /// *******************
 ///   Vector Consts

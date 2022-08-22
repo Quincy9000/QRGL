@@ -13,30 +13,9 @@ use window::*;
 fn test_window() {
     let mut window = window::Window::new();
 
-    let mut vao = Vao::new();
-    vao.bind();
-    let mut vbo = Vbo::new();
-    #[rustfmt::skip]
-    vbo.set_data(&[
-        // first 3 are pos, second 3 are color data
-        -0.5f32,  -0.5f32, 0f32, /* 0f32,  1f32, 0f32, */
-         0f32,     0.5f32, 0f32, /* 1f32,  0f32, 0f32, */
-         0.5f32,  -0.5f32, 0f32, /* 0f32,  0f32, 1f32, */
-    ]);
-
-    vao.add_attribute(&VertexPosInfo);
-
-    let mut shader_builder = ShaderBuilder::new();
-    shader_builder.add_shader(shaders::SIMPLE_VERTEX);
-    shader_builder.add_shader(shaders::SIMPLE_FRAMENT);
-
-    let mut shader = shader_builder.build();
-    shader.bind();
-    shader.set_uniform("color", Vec3::from([1f32, 1f32, 0f32]));
+    let mut mat = Material::default();
 
     while !window.should_close() {
-        window.swap_buffers();
-
         while let Some(e) = window.events() {
             if e.is_key_pressed(Key::Escape) {
                 window.set_should_close(true);
@@ -50,6 +29,7 @@ fn test_window() {
             }
         }
 
-        draw();
+        window.swap_buffers();
+        
     }
 }

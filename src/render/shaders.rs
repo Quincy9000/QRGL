@@ -1,7 +1,7 @@
 use crate::render::ogl::ShaderType;
 
 pub const SIMPLE_VERTEX: ShaderType = ShaderType::Vertex(BASIC_VERTEX);
-pub const SIMPLE_FRAMENT: ShaderType = ShaderType::Fragment(BASIC_FRAG);
+pub const SIMPLE_FRAGMENT: ShaderType = ShaderType::Fragment(BASIC_FRAG);
 
 const BASIC_VERTEX: &str = r"
 #version 330 core
