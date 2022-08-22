@@ -150,8 +150,24 @@ impl<'a> Vao<'a> {
 }
 
 pub enum ShaderType {
-    Vertex,
-    Fragment,
+    Vertex(&'static str),
+    Fragment(&'static str),
+}
+
+impl ShaderType {
+    pub fn get_type(&self) -> gl::types::GLuint {
+        match self {
+            ShaderType::Vertex(_) => gl::VERTEX_SHADER,
+            ShaderType::Fragment(_) => gl::FRAGMENT_SHADER,
+        }
+    }
+
+    pub fn get_source(&self) -> &'static str {
+        match self {
+            ShaderType::Vertex(s) => s,
+            ShaderType::Fragment(s) => s,
+        }
+    }
 }
 
 pub struct ShaderBuilder {
@@ -167,18 +183,11 @@ impl ShaderBuilder {
         }
     }
 
-    pub fn add_shader(&mut self, source: &str, shader_type: ShaderType) {
-        let cstr = CString::new(source).expect("Failed to make cstring from add_shader");
-
-        let shader_id = unsafe {
-            gl::CreateShader(match shader_type {
-                ShaderType::Vertex => gl::VERTEX_SHADER,
-                ShaderType::Fragment => gl::FRAGMENT_SHADER,
-            })
-        };
-
+    pub fn add_shader(&mut self, shader_type: ShaderType) {
+        let shader_id = unsafe { gl::CreateShader(shader_type.get_type()) };
+        let source = CString::new(shader_type.get_source()).unwrap();
         unsafe {
-            gl::ShaderSource(shader_id, 1, &cstr.as_ptr(), std::ptr::null());
+            gl::ShaderSource(shader_id, 1, &source.as_ptr(), std::ptr::null());
             gl::CompileShader(shader_id);
         }
 

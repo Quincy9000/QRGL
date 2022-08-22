@@ -1,2 +1,2 @@
-pub mod basic_shaders;
 pub mod ogl;
+pub mod shaders;

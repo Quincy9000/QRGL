@@ -6,7 +6,7 @@ mod math;
 mod render;
 mod window;
 use math::vector::*;
-use render::{basic_shaders, ogl::*};
+use render::{ogl::*, shaders};
 use window::*;
 
 #[test]
@@ -19,16 +19,16 @@ fn test_window() {
     #[rustfmt::skip]
     vbo.set_data(&[
         // first 3 are pos, second 3 are color data
-        -0.5f32,  -0.5f32, 0f32, /**/   /* 0f32,  1f32, 0f32, */
-         0f32,     0.5f32, 0f32, /**/   /* 1f32,  0f32, 0f32, */
-         0.5f32,  -0.5f32, 0f32, /**/   /* 0f32,  0f32, 1f32, */
+        -0.5f32,  -0.5f32, 0f32, /* 0f32,  1f32, 0f32, */
+         0f32,     0.5f32, 0f32, /* 1f32,  0f32, 0f32, */
+         0.5f32,  -0.5f32, 0f32, /* 0f32,  0f32, 1f32, */
     ]);
+
     vao.add_attribute(&VertexPosInfo);
-    // vao.add_attribute(&VertexColorInfo);
 
     let mut shader_builder = ShaderBuilder::new();
-    shader_builder.add_shader(basic_shaders::BASIC_VERTEX, ShaderType::Vertex);
-    shader_builder.add_shader(basic_shaders::BASIC_FRAG, ShaderType::Fragment);
+    shader_builder.add_shader(shaders::SIMPLE_VERTEX);
+    shader_builder.add_shader(shaders::SIMPLE_FRAMENT);
 
     let mut shader = shader_builder.build();
     shader.bind();

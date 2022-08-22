@@ -1,4 +1,9 @@
-pub const BASIC_VERTEX: &str = r"
+use crate::render::ogl::ShaderType;
+
+pub const SIMPLE_VERTEX: ShaderType = ShaderType::Vertex(BASIC_VERTEX);
+pub const SIMPLE_FRAMENT: ShaderType = ShaderType::Fragment(BASIC_FRAG);
+
+const BASIC_VERTEX: &str = r"
 #version 330 core
 
 layout (location = 0) in vec3 aPos;
@@ -13,7 +18,7 @@ void main()
     gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
 }";
 
-pub const BASIC_FRAG: &str = r"
+const BASIC_FRAG: &str = r"
 #version 330 core
 
 in vec3 colorPos;

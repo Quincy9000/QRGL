@@ -66,7 +66,7 @@ impl Window {
                 events: data.1,
             }),
             _ => {
-                self.glfw.poll_events();
+                self.handle.glfw.poll_events();
                 None
             }
         }
@@ -78,9 +78,9 @@ pub trait InputEvents {
 }
 
 impl InputEvents for FrameData {
-    fn is_key_pressed(&self, key: Key) -> bool {
+    fn is_key_pressed(&self, k: Key) -> bool {
         match self.events {
-            WindowEvent::Key(key, code, act, mods) => key == key,
+            WindowEvent::Key(key, code, act, mods) => k == key && act == Action::Press,
             _ => false,
         }
     }
