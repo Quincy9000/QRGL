@@ -10,6 +10,7 @@ pub trait Uniform {
 
 use gl::*;
 
+use crate::math::color::Color;
 use crate::math::vector::*;
 use crate::render::shaders;
 
@@ -17,6 +18,7 @@ use crate::math::*;
 
 pub struct Vbo {
     id: u32,
+    size: usize,
 }
 
 impl Vbo {
@@ -26,22 +28,27 @@ impl Vbo {
             gl::GenBuffers(1, &mut v);
             v
         };
-        Self { id: vbo }
+        Self { id: vbo, size: 0 }
+    }
+
+    pub fn get_size(&self) -> usize {
+        self.size
     }
 
     pub fn set_data<T>(&mut self, data: &[T]) {
         unsafe {
             self.bind();
+            self.size = std::mem::size_of::<T>() * data.len();
             gl::BufferData(
                 gl::ARRAY_BUFFER,
-                std::mem::size_of::<T>() as isize * data.len() as isize,
+                self.size as isize,
                 data.as_ptr() as *const _,
                 gl::STATIC_DRAW,
             );
         }
     }
 
-    pub fn bind(&mut self) {
+    pub fn bind(&self) {
         unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, self.id) }
     }
 }
@@ -138,6 +145,7 @@ impl Vao {
 
         for (i, data) in self.info.iter().enumerate() {
             unsafe {
+                gl::EnableVertexAttribArray(i as u32);
                 gl::VertexAttribPointer(
                     i as u32,
                     data.dims(),
@@ -146,8 +154,15 @@ impl Vao {
                     stride as i32,
                     data.offset() as *const std::os::raw::c_void,
                 );
-                gl::EnableVertexAttribArray(i as u32);
             }
+        }
+    }
+}
+
+impl Drop for Vao {
+    fn drop(&mut self) {
+        unsafe {
+            gl::BindVertexArray(0);
         }
     }
 }
@@ -224,6 +239,7 @@ impl ShaderBuilder {
 
 pub struct Shader {
     program: u32,
+    vao: Vao,
 }
 
 impl Shader {
@@ -240,6 +256,10 @@ impl Shader {
             uniform.apply_uniform(loc);
         }
     }
+
+    pub fn add_attribute(&self) {
+        unsafe {}
+    }
 }
 
 impl Drop for Shader {
@@ -251,14 +271,34 @@ impl Drop for Shader {
 }
 
 pub struct Material {
-    vao: Vao,
-    shader: Shader,
+    pub vao: Vao,
+    pub shader: Shader,
+}
+
+impl Material {
+    pub fn set_color(&mut self, color: Color) {
+        unsafe {
+            match color.format {
+                color::Format::RGBA { r, g, b, a } => {
+                    let s = CString::new("color")
+                        .expect("Failed to make CString from Material set_color");
+                    let loc = gl::GetUniformLocation(self.shader.program, s.as_ptr());
+                    gl::Uniform1ui(loc, color.asdad());
+                }
+                color::Format::RGB { r, g, b } => todo!(),
+                color::Format::SRGB => todo!(),
+            }
+        }
+    }
+
+    pub fn set_shader(&self) {
+        self.vao.add_attribute(&VertexPosInfo);
+    }
 }
 
 impl Default for Material {
     fn default() -> Self {
         let mut vao = Vao::new();
-        vao.add_attribute(&VertexPosInfo);
 
         let mut shader_builder = ShaderBuilder::new();
         shader_builder.add_shader(shaders::SIMPLE_VERTEX);

@@ -8,9 +8,9 @@ const BASIC_VERTEX: &str = r"
 
 layout (location = 0) in vec3 aPos;
 
-uniform vec3 color;
+uniform uint color;
 
-out vec3 colorPos;
+out uint colorPos;
 
 void main()
 {
@@ -21,10 +21,14 @@ void main()
 const BASIC_FRAG: &str = r"
 #version 330 core
 
-in vec3 colorPos;
+in uint colorPos;
 out vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(colorPos, 1.0f);
+    float r = (float)(colorPos >> 24);
+    float g = (float)(colorPos >> 16);
+    float b = (float)(colorPos >> 8);
+    float a = (float)colorPos;
+    FragColor = vec4(r, g, b, a);
 }";

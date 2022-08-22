@@ -9,6 +9,8 @@ pub use glfw::Context;
 pub use glfw::Key;
 pub use glfw::WindowEvent;
 
+use crate::math::color::Color;
+
 pub struct FrameData {
     pub time: f64,
     pub events: WindowEvent,
@@ -69,6 +71,13 @@ impl Window {
                 self.handle.glfw.poll_events();
                 None
             }
+        }
+    }
+
+    pub fn clear(&self, color: Color) {
+        unsafe {
+            gl::ClearColor(0.0, 0.0, 1.0, 1.0);
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
     }
 }
