@@ -1,10 +1,12 @@
 use crate::math::vector::{Vec2, *};
 use crate::render::ogl::Vbo;
 
-use super::ogl::Material;
+use super::ogl::{Material, Vao, VertexPosInfo};
 
 pub trait Shape {
     fn get_arrays(&self) -> Vec<f32>;
+
+    fn set_attributes(&mut self, vao: &Vao){}
 }
 
 pub struct Square {
@@ -51,15 +53,24 @@ impl Shape for Square {
     #[rustfmt::skip]
     fn get_arrays(&self) -> Vec<f32> {
         // todo: will optimize this later for using element buffers, for now just two tris
+        // vec![
+        //     // firs tri
+        //     self.pos[X], self.pos[Y], 
+        //     self.pos[X] + self.size[X], self.pos[Y],
+        //     self.pos[X], self.pos[Y] + self.size[Y],
+        //     // second try
+        //     self.pos[X] + self.size[X], self.pos[Y],
+        //     self.pos[X] + self.size[X], self.pos[Y] + self.size[Y],
+        //     self.pos[X], self.pos[Y] + self.size[Y] 
+        // ]
         vec![
-            // firs tri
-            self.pos[X], self.pos[Y], 
-            self.pos[X] + self.size[X], self.pos[Y],
-            self.pos[X], self.pos[Y] + self.size[Y],
-            // second try
-            self.pos[X] + self.size[X], self.pos[Y],
-            self.pos[X] + self.size[X], self.pos[Y] + self.size[Y],
-            self.pos[X], self.pos[Y] + self.size[Y] 
+            0.0, 0.0, 
+            0.2, 0.0, 
+            0.0, 0.2,
+            //
+            0.2, 0.0,
+            0.2, 0.2,
+            0.0, 0.2
         ]
     }
 }
@@ -79,31 +90,5 @@ impl Shape for Triangle {
             self.pos3[X], self.pos3[Y], 
             self.pos3[X], self.pos3[Y],
         ]
-    }
-}
-
-pub struct DrawStream {
-    vbo: Vbo,
-}
-
-impl DrawStream {
-    pub fn draw(&self, mat: &Material) {
-        mat.vao.bind();
-        mat.shader.bind();
-
-        unsafe {
-            gl::DrawArrays(gl::TRIANGLES, 0, self.vbo.get_size() as i32 / 3);
-        }
-    }
-}
-
-impl<T: Shape> From<T> for DrawStream {
-    fn from(s: T) -> Self {
-        let buffer = s.get_arrays();
-
-        let mut vbo = Vbo::new();
-        vbo.set_data(&buffer);
-
-        Self { vbo }
     }
 }

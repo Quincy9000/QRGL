@@ -1,3 +1,5 @@
+use crate::render::ogl::Uniform;
+
 pub struct Color {
     pub format: Format,
 }
@@ -40,4 +42,28 @@ pub enum Format {
     RGBA { r: u8, g: u8, b: u8, a: u8 },
     RGB { r: u8, g: u8, b: u8 },
     SRGB,
+}
+
+impl Uniform for Color {
+    fn apply_uniform(&mut self, loc: i32) {
+        unsafe {
+            match self.format {
+                Format::RGBA { r, g, b, a } => {
+                    gl::Uniform3f(
+                        loc,
+                        (r as f32 / 255f32),
+                        (g as f32 / 255f32),
+                        (b as f32 / 255f32),
+                    );
+                }
+                Format::RGB { r, g, b } => gl::Uniform3f(
+                    loc,
+                    (r as f32 / 255f32),
+                    (g as f32 / 255f32),
+                    (b as f32 / 255f32),
+                ),
+                Format::SRGB => todo!(),
+            }
+        }
+    }
 }

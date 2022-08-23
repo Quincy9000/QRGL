@@ -183,20 +183,6 @@ impl One for f32 {
     }
 }
 
-// impl<T, const N: usize> FirstDimension for Vector<T, N>
-// where
-//     If<{ N > 0 }>: True,
-//     T: Default + Copy + Zero + One,
-// {
-// }
-
-// impl<T, const N: usize> SecondDimension for Vector<T, N>
-// where
-//     If<{ N > 1 }>: True,
-//     T: Default + Copy + Zero + One,
-// {
-// }
-
 impl<T, const N: usize> Add for Vector<T, N>
 where
     T: AddAssign<T>,

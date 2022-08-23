@@ -16,6 +16,8 @@ use crate::render::shaders;
 
 use crate::math::*;
 
+use super::shapes::Shape;
+
 pub struct Vbo {
     id: u32,
     size: usize,
@@ -31,6 +33,18 @@ impl Vbo {
         Self { id: vbo, size: 0 }
     }
 
+    pub fn new_bind() -> Self {
+        let v = Vbo::new();
+        v.bind();
+        v
+    }
+
+    pub fn new_bind_buffer<T>(data: &[T]) -> Self {
+        let mut v = Vbo::new();
+        v.set_data(&data);
+        v
+    }
+
     pub fn get_size(&self) -> usize {
         self.size
     }
@@ -42,7 +56,7 @@ impl Vbo {
             gl::BufferData(
                 gl::ARRAY_BUFFER,
                 self.size as isize,
-                data.as_ptr() as *const _,
+                data.as_ptr().cast(),
                 gl::STATIC_DRAW,
             );
         }
@@ -130,12 +144,23 @@ impl Vao {
         }
     }
 
+    pub fn new_bind() -> Self {
+        let v = Vao::new();
+        v.bind();
+        v
+    }
+
     pub fn bind(&self) {
         unsafe { gl::BindVertexArray(self.id) }
     }
 
-    pub fn add_attribute<T: VertexInfo>(&mut self, data: &'static T) {
+    pub fn unbind(&self) {
+        unsafe { gl::BindVertexArray(0) }
+    }
+
+    pub fn add_attribute<T: VertexInfo>(&mut self, vbo: &Vbo, data: &'static T) {
         self.bind();
+        vbo.bind();
         self.info.push(data);
 
         let mut stride = 0;
@@ -239,7 +264,6 @@ impl ShaderBuilder {
 
 pub struct Shader {
     program: u32,
-    vao: Vao,
 }
 
 impl Shader {
@@ -250,15 +274,12 @@ impl Shader {
     }
 
     pub fn set_uniform<T: Uniform>(&mut self, name: &str, mut uniform: T) {
+        self.bind();
         unsafe {
-            let a = CString::new(name).expect("Failed to make CString from uniform trait");
+            let a = CString::new(name).expect("Failed to make CString from Shader set_uniform");
             let loc = gl::GetUniformLocation(self.program, a.as_ptr());
             uniform.apply_uniform(loc);
         }
-    }
-
-    pub fn add_attribute(&self) {
-        unsafe {}
     }
 }
 
@@ -271,43 +292,56 @@ impl Drop for Shader {
 }
 
 pub struct Material {
-    pub vao: Vao,
     pub shader: Shader,
 }
 
 impl Material {
     pub fn set_color(&mut self, color: Color) {
         unsafe {
-            match color.format {
-                color::Format::RGBA { r, g, b, a } => {
-                    let s = CString::new("color")
-                        .expect("Failed to make CString from Material set_color");
-                    let loc = gl::GetUniformLocation(self.shader.program, s.as_ptr());
-                    gl::Uniform1ui(loc, color.asdad());
-                }
-                color::Format::RGB { r, g, b } => todo!(),
-                color::Format::SRGB => todo!(),
-            }
+            self.shader.set_uniform("color", color);
         }
     }
 
-    pub fn set_shader(&self) {
-        self.vao.add_attribute(&VertexPosInfo);
+    pub fn bind(&self) {
+        self.shader.bind();
     }
 }
 
 impl Default for Material {
     fn default() -> Self {
-        let mut vao = Vao::new();
-
         let mut shader_builder = ShaderBuilder::new();
-        shader_builder.add_shader(shaders::SIMPLE_VERTEX);
-        shader_builder.add_shader(shaders::SIMPLE_FRAGMENT);
+        shader_builder.add_shader(shaders::BASIC_VERTEX);
+        shader_builder.add_shader(shaders::BASIC_FRAGMENT);
 
         let mut shader = shader_builder.build();
         shader.bind();
-        shader.set_uniform("color", vec3(0.0, 0.0, 0.0));
+        shader.set_uniform("color", Color::WHITE);
 
-        Self { vao, shader }
+        Self { shader }
+    }
+}
+
+pub struct DrawStream {
+    vao: Vao,
+    vbo: Vbo,
+}
+
+impl DrawStream {
+    pub fn draw(&self, mat: &Material) {
+        mat.bind();
+        self.vao.bind();
+
+        unsafe {
+            gl::DrawArrays(gl::TRIANGLES, 0, 12);
+        }
+    }
+}
+
+impl<T: Shape> From<T> for DrawStream {
+    fn from(s: T) -> Self {
+        let mut vao = Vao::new_bind();
+        let mut vbo = Vbo::new_bind_buffer(&s.get_arrays());
+        vao.add_attribute(&vbo, &VertexPosInfo);
+        Self { vbo, vao }
     }
 }

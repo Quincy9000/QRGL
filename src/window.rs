@@ -3,11 +3,10 @@ use std::{
     sync::mpsc::Receiver,
 };
 
-use glfw::*;
-
 pub use glfw::Context;
 pub use glfw::Key;
 pub use glfw::WindowEvent;
+use glfw::{Action, FlushedMessages, WindowHint, WindowMode, FAIL_ON_ERRORS};
 
 use crate::math::color::Color;
 
@@ -40,14 +39,20 @@ impl DerefMut for Window {
     }
 }
 
+impl Default for Window {
+    fn default() -> Self {
+        Self::new("QEngine", 800, 600)
+    }
+}
+
 impl Window {
-    pub fn new() -> Self {
+    pub fn new(title: &str, width: u32, height: u32) -> Self {
         let mut glfw = glfw::init(FAIL_ON_ERRORS).expect("Failed to init glfw");
         glfw.window_hint(WindowHint::ContextVersionMajor(3));
         glfw.window_hint(WindowHint::ContextVersionMinor(3));
 
         let (mut w, e) = glfw
-            .create_window(800, 600, "Q", WindowMode::Windowed)
+            .create_window(width, height, title, WindowMode::Windowed)
             .expect("Failed to make a window");
 
         w.make_current();

@@ -1,34 +1,34 @@
 use crate::render::ogl::ShaderType;
 
-pub const SIMPLE_VERTEX: ShaderType = ShaderType::Vertex(BASIC_VERTEX);
-pub const SIMPLE_FRAGMENT: ShaderType = ShaderType::Fragment(BASIC_FRAG);
+pub const BASIC_VERTEX: ShaderType = ShaderType::Vertex(VERTEX_SOURCE);
+pub const BASIC_FRAGMENT: ShaderType = ShaderType::Fragment(FRAGMENT_SOURCE);
 
-const BASIC_VERTEX: &str = r"
+const VERTEX_SOURCE: &str = r"
 #version 330 core
 
 layout (location = 0) in vec3 aPos;
 
-uniform uint color;
+// uniform vec3 color;
 
-out uint colorPos;
+out vec3 out_color;
 
 void main()
 {
-    colorPos = color;
+    out_color = vec3(1, 0, 0);
     gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
 }";
 
-const BASIC_FRAG: &str = r"
+const FRAGMENT_SOURCE: &str = r"
 #version 330 core
 
-in uint colorPos;
+in vec3 out_color;
 out vec4 FragColor;
 
 void main()
 {
-    float r = (float)(colorPos >> 24);
-    float g = (float)(colorPos >> 16);
-    float b = (float)(colorPos >> 8);
-    float a = (float)colorPos;
-    FragColor = vec4(r, g, b, a);
+    // float r = (float)(out_color >> 24);
+    // float g = (float)(out_color >> 16);
+    // float b = (float)(out_color >> 8);
+    // float a = (float)out_color;
+    FragColor = vec4(1, 0, 0, a);
 }";
