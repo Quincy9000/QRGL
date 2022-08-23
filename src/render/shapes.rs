@@ -29,6 +29,10 @@ impl Circle {
     pub fn new(pos: Vec2, radius: f32) -> Self {
         Self { pos, radius }
     }
+
+    pub const fn resolution() -> usize {
+        16
+    }
 }
 
 pub struct Triangle {
@@ -45,7 +49,37 @@ impl Triangle {
 
 impl Shape for Circle {
     fn get_arrays(&self) -> Vec<f32> {
-        todo!("Make the circle function")
+
+        let (cx, cy) = (self.pos[X], self.pos[Y]);
+
+        let res = Circle::resolution();
+        let mut v = Vec::new();
+        let step = (std::f32::consts::TAU) / (res as f32);
+
+        let len = self.radius;
+
+        let mut last_point = (1f32, 0f32);
+
+        for i in 1..res+1 {
+            let turn = i as f32 * step;
+
+            println!("{turn}");
+
+            let (y, x) = turn.sin_cos();
+
+            v.push(cx);
+            v.push(cy);
+
+            v.push(last_point.0 * len);
+            v.push(last_point.1 * len);
+
+            v.push(x * len);
+            v.push(y * len);
+
+            last_point = (x, y);
+        }
+
+        v
     }
 
     fn set_attributes(&mut self, vbo: &Vbo, vao: &mut Vao) {
@@ -77,17 +111,10 @@ impl Shape for Square {
 impl Shape for Triangle {
     #[rustfmt::skip]
     fn get_arrays(&self) -> Vec<f32> {
-        // todo: will optimize this later for using element buffers, for now just two tris
         vec![
-            // firs tri
             self.pos1[X], self.pos1[Y], 
-            self.pos1[X], self.pos1[Y],
-            // second try
             self.pos2[X], self.pos2[Y], 
-            self.pos2[X], self.pos2[Y],
-            // third tri
             self.pos3[X], self.pos3[Y], 
-            self.pos3[X], self.pos3[Y],
         ]
     }
     
