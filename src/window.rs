@@ -8,7 +8,7 @@ pub use glfw::Key;
 pub use glfw::WindowEvent;
 use glfw::{Action, FlushedMessages, WindowHint, WindowMode, FAIL_ON_ERRORS};
 
-use crate::math::color::Color;
+use crate::math::color::{Color, Format};
 
 pub struct FrameData {
     pub time: f64,
@@ -79,9 +79,22 @@ impl Window {
         }
     }
 
+    pub fn update_viewport(&self) {
+        unsafe {
+            gl::Viewport(0, 0, self.get_size().0, self.get_size().1);
+        }
+    }
+
     pub fn clear(&self, color: Color) {
         unsafe {
-            gl::ClearColor(0.0, 0.0, 1.0, 1.0);
+            match color.format {
+                Format::RGB { r, g, b } => {
+                    gl::ClearColor(r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0, 1.0);
+                }
+                Format::RGBA { r, g, b, a } => todo!(),
+                Format::SRGB => todo!(),
+            }
+
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
     }

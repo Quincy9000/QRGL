@@ -13,10 +13,11 @@ use window::*;
 fn test_window() {
     let mut window = Window::default();
 
-    let mut sq = Square::new(vec2(0., 0.), vec2(0.1, 0.1));
+    let mut sq = Square::new(vec2(-0.25, -0.25), vec2(0.5, 0.5));
+    let ds = DrawStream::from(sq);
 
-    let ds = DrawStream::from(sq); // contains the vao, and vbo
-    let mut mat = Material::default(); // makes the shader program
+    let mut mat = Material::default();
+    mat.set_color(Color::rgb(0, 200, 0));
 
     while !window.should_close() {
         while let Some(e) = window.events() {
@@ -25,14 +26,11 @@ fn test_window() {
             }
 
             if let WindowEvent::Size(x, y) = e.events {
-                println!("resized");
-                unsafe {
-                    gl::Viewport(0, 0, x, y);
-                }
+                window.update_viewport();
             }
         }
 
-        window.clear(Color::BLUE);
+        window.clear(Color::rgb(100, 149, 237));
         ds.draw(&mat);
         window.swap_buffers();
     }

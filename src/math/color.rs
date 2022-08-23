@@ -1,5 +1,7 @@
 use crate::render::ogl::Uniform;
 
+use super::vector::vec3;
+
 pub struct Color {
     pub format: Format,
 }
@@ -25,17 +27,17 @@ impl Color {
         }
     }
 
-    pub fn asdad(&self) -> u32 {
-        match self.format {
-            Format::RGBA { r, g, b, a } => {
-                ((r as u32) << 24u32) + ((g as u32) << 16u32) + ((b as u32) << 8u32) + a as u32
-            }
-            Format::RGB { r, g, b } => {
-                ((r as u32) << 24u32) + ((g as u32) << 16u32) + ((b as u32) << 8u32) + 255
-            }
-            Format::SRGB => 0,
-        }
-    }
+    // pub fn asdad(&self) -> u32 {
+    //     match self.format {
+    //         Format::RGBA { r, g, b, a } => {
+    //             ((r as u32) << 24u32) + ((g as u32) << 16u32) + ((b as u32) << 8u32) + a as u32
+    //         }
+    //         Format::RGB { r, g, b } => {
+    //             ((r as u32) << 24u32) + ((g as u32) << 16u32) + ((b as u32) << 8u32) + 255
+    //         }
+    //         Format::SRGB => 0,
+    //     }
+    // }
 }
 
 pub enum Format {
@@ -49,19 +51,13 @@ impl Uniform for Color {
         unsafe {
             match self.format {
                 Format::RGBA { r, g, b, a } => {
-                    gl::Uniform3f(
-                        loc,
-                        (r as f32 / 255f32),
-                        (g as f32 / 255f32),
-                        (b as f32 / 255f32),
-                    );
+                    let v = vec3(r as f32 / 255f32, g as f32 / 255f32, b as f32 / 255f32);
+                    gl::Uniform3fv(loc, 1, v.as_array().as_ptr());
                 }
-                Format::RGB { r, g, b } => gl::Uniform3f(
-                    loc,
-                    (r as f32 / 255f32),
-                    (g as f32 / 255f32),
-                    (b as f32 / 255f32),
-                ),
+                Format::RGB { r, g, b } => {
+                    let v = vec3(r as f32 / 255f32, g as f32 / 255f32, b as f32 / 255f32);
+                    gl::Uniform3fv(loc, 1, v.as_array().as_ptr());
+                }
                 Format::SRGB => todo!(),
             }
         }

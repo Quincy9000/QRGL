@@ -52,10 +52,10 @@ impl Vbo {
     pub fn set_data<T>(&mut self, data: &[T]) {
         unsafe {
             self.bind();
-            self.size = std::mem::size_of::<T>() * data.len();
+            self.size = data.len();
             gl::BufferData(
                 gl::ARRAY_BUFFER,
-                self.size as isize,
+                (std::mem::size_of::<T>() * self.size) as isize,
                 data.as_ptr().cast(),
                 gl::STATIC_DRAW,
             );
@@ -74,56 +74,47 @@ impl Drop for Vbo {
 }
 
 pub trait VertexInfo {
-    fn dims(&self) -> i32;
-    fn data_type(&self) -> u32;
+    fn dims(&self) -> u32;
+    fn kind(&self) -> u32;
     fn size(&self) -> usize;
     fn normalized(&self) -> u8;
-    fn offset(&self) -> u32;
 }
 
-pub struct VertexPosInfo;
-impl VertexInfo for VertexPosInfo {
-    fn dims(&self) -> i32 {
-        3
-    }
-
-    fn data_type(&self) -> u32 {
-        gl::FLOAT
+pub struct VertexPosInfo2D;
+impl VertexInfo for VertexPosInfo2D {
+    fn dims(&self) -> u32 {
+        2
     }
 
     fn size(&self) -> usize {
-        std::mem::size_of::<f32>()
+        std::mem::size_of::<f32>() * self.dims() as usize
+    }
+
+    fn kind(&self) -> u32 {
+        gl::FLOAT
     }
 
     fn normalized(&self) -> u8 {
         gl::FALSE
-    }
-
-    fn offset(&self) -> u32 {
-        0
     }
 }
 
 pub struct VertexColorInfo;
 impl VertexInfo for VertexColorInfo {
-    fn dims(&self) -> i32 {
+    fn dims(&self) -> u32 {
         3
     }
 
     fn size(&self) -> usize {
-        std::mem::size_of::<f32>()
+        std::mem::size_of::<f32>() * self.dims() as usize
     }
 
-    fn data_type(&self) -> u32 {
+    fn kind(&self) -> u32 {
         gl::FLOAT
     }
 
     fn normalized(&self) -> u8 {
         gl::FALSE
-    }
-
-    fn offset(&self) -> u32 {
-        self.dims() as u32 * self.size() as u32
     }
 }
 
@@ -165,7 +156,7 @@ impl Vao {
 
         let mut stride = 0;
         for data in &self.info {
-            stride += data.size() as i32 * data.dims();
+            stride += data.size() as i32;
         }
 
         for (i, data) in self.info.iter().enumerate() {
@@ -173,11 +164,11 @@ impl Vao {
                 gl::EnableVertexAttribArray(i as u32);
                 gl::VertexAttribPointer(
                     i as u32,
-                    data.dims(),
-                    data.data_type(),
+                    data.dims() as i32,
+                    data.kind(),
                     data.normalized(),
                     stride as i32,
-                    data.offset() as *const std::os::raw::c_void,
+                    (i * data.size()) as *const _,
                 );
             }
         }
@@ -310,8 +301,8 @@ impl Material {
 impl Default for Material {
     fn default() -> Self {
         let mut shader_builder = ShaderBuilder::new();
-        shader_builder.add_shader(shaders::BASIC_VERTEX);
-        shader_builder.add_shader(shaders::BASIC_FRAGMENT);
+        shader_builder.add_shader(shaders::BASIC_VERTEX_2D);
+        shader_builder.add_shader(shaders::BASIC_FRAGMENT_2D);
 
         let mut shader = shader_builder.build();
         shader.bind();
@@ -332,16 +323,16 @@ impl DrawStream {
         self.vao.bind();
 
         unsafe {
-            gl::DrawArrays(gl::TRIANGLES, 0, 12);
+            gl::DrawArrays(gl::TRIANGLES, 0, self.vbo.get_size() as i32);
         }
     }
 }
 
 impl<T: Shape> From<T> for DrawStream {
-    fn from(s: T) -> Self {
+    fn from(mut s: T) -> Self {
         let mut vao = Vao::new_bind();
         let mut vbo = Vbo::new_bind_buffer(&s.get_arrays());
-        vao.add_attribute(&vbo, &VertexPosInfo);
+        s.set_attributes(&mut vbo, &mut vao);
         Self { vbo, vao }
     }
 }
