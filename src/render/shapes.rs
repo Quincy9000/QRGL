@@ -63,8 +63,6 @@ impl Shape for Circle {
         for i in 1..res+1 {
             let turn = i as f32 * step;
 
-            println!("{turn}");
-
             let (y, x) = turn.sin_cos();
 
             v.push(cx);
