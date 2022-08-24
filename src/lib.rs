@@ -2,9 +2,9 @@
 #![allow(incomplete_features)]
 #![feature(generic_const_exprs)]
 
-mod math;
-mod render;
-mod window;
+pub mod math;
+pub mod render;
+pub mod window;
 use math::{color::Color, vector::*};
 use render::{
     ogl::*,
