@@ -322,8 +322,11 @@ impl DrawStream {
         mat.bind();
         self.vao.bind();
 
+        // 2 because its 2d, each vertex is xy, but this wont be the case if we store color date in each vertex as well
+        // it should be : get_size() / vertex.size()
+        let size = self.vbo.get_size() as i32 / 2;
         unsafe {
-            gl::DrawArrays(gl::TRIANGLES, 0, self.vbo.get_size() as i32);
+            gl::DrawArrays(gl::TRIANGLES, 0, size);
         }
     }
 }

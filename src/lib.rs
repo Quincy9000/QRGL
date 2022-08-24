@@ -5,14 +5,16 @@
 pub mod math;
 pub mod render;
 pub mod window;
+use std::{any::Any, cell::RefCell, rc::Rc};
+
 use math::{color::Color, vector::*};
 use render::{
     ogl::*,
     shaders,
     shapes::{Circle, Square, Triangle},
 };
-use window::*;
 
+use window::*;
 #[test]
 fn test_window() {
     fn setup() -> Vec<(DrawStream, Material)> {
@@ -45,7 +47,7 @@ fn test_window() {
         draws
     }
 
-    let mut window = Window::default();
+    let mut window = Window::new("Game", 800, 800);
 
     let mut draws: Vec<(DrawStream, Material)> = setup();
 
@@ -53,10 +55,6 @@ fn test_window() {
         while let Some(e) = window.events() {
             if e.is_key_pressed(Key::Escape) {
                 window.set_should_close(true);
-            }
-
-            if let WindowEvent::Size(x, y) = e.events {
-                window.update_viewport();
             }
         }
 

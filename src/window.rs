@@ -68,20 +68,26 @@ impl Window {
 
     pub fn events(&mut self) -> Option<FrameData> {
         match self.events.try_recv() {
-            Ok(data) => Some(FrameData {
-                time: data.0,
-                events: data.1,
-            }),
+            Ok(data) => {
+                let (dt, event) = data;
+
+                if let WindowEvent::Size(x, y) = event {
+                    unsafe {
+                        gl::Viewport(0, 0, x, y);
+                        self.clear(Color::GREEN);
+                        self.swap_buffers();
+                    }
+                }
+
+                Some(FrameData {
+                    time: dt,
+                    events: event,
+                })
+            }
             _ => {
                 self.handle.glfw.poll_events();
                 None
             }
-        }
-    }
-
-    pub fn update_viewport(&self) {
-        unsafe {
-            gl::Viewport(0, 0, self.get_size().0, self.get_size().1);
         }
     }
 
