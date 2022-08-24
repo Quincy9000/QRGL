@@ -47,7 +47,7 @@ fn test_window() {
 
     let mut window = Window::default();
 
-    let mut draws = setup();
+    let mut draws: Vec<(DrawStream, Material)> = setup();
 
     while !window.should_close() {
         while let Some(e) = window.events() {
