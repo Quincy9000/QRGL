@@ -10,6 +10,8 @@ One inspiration to make this was how annoying it was to use other frameworks tha
 
 The main feature of this project will be the ease of use for the api. Performance and efficiency are an after thought right now because I want to understand the code first because I go ahead and optimize. However that doesn't mean I don't want to optimize the code. It's just not a top priority for this project. 
 
+## Example Code
+
 ```rust
 use qrgl::{math::color::*, math::vector::*, render::ogl::*, render::shapes::*, window::*};
 
