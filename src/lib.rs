@@ -4,17 +4,17 @@
 
 pub mod math;
 pub mod render;
-pub mod window;
-use std::{any::Any, cell::RefCell, rc::Rc};
 
 use math::{color::Color, vector::*};
 use render::{
+    cam,
     ogl::*,
     shaders,
     shapes::{Circle, Square, Triangle},
+    window::*,
 };
+use std::{any::Any, cell::RefCell, rc::Rc};
 
-use window::*;
 #[test]
 fn test_window() {
     fn setup() -> Vec<(DrawStream, Material)> {

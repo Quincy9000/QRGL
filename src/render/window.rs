@@ -6,7 +6,7 @@ use std::{
 pub use glfw::Context;
 pub use glfw::Key;
 pub use glfw::WindowEvent;
-use glfw::{Action, FlushedMessages, WindowHint, WindowMode, FAIL_ON_ERRORS};
+use glfw::{Action, FlushedMessages, Window as GlfwWindow, WindowHint, WindowMode, FAIL_ON_ERRORS};
 
 use crate::math::color::{Color, Format};
 
@@ -21,12 +21,12 @@ pub struct EventIter<'a> {
 
 #[derive(Debug)]
 pub struct Window {
-    handle: glfw::Window,
+    handle: GlfwWindow,
     events: Receiver<(f64, WindowEvent)>,
 }
 
 impl Deref for Window {
-    type Target = glfw::Window;
+    type Target = GlfwWindow;
 
     fn deref(&self) -> &Self::Target {
         &self.handle

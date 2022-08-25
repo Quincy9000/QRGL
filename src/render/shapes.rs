@@ -1,6 +1,5 @@
 use crate::math::vector::{Vec2, *};
 use crate::render::ogl::Vbo;
-
 use super::ogl::{Material, Vao, VertexPosInfo2D};
 
 pub trait Shape {
