@@ -18,6 +18,8 @@ use crate::math::*;
 
 use super::shapes::Shape;
 
+// TODO: we need to put more meta data on the buffer types because they do not store enough information to make them more efficient
+
 pub struct Vbo {
     id: u32,
     size: usize,
@@ -69,7 +71,10 @@ impl Vbo {
 
 impl Drop for Vbo {
     fn drop(&mut self) {
-        unsafe { gl::DeleteBuffers(1, &self.id) }
+        unsafe {
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+            gl::DeleteBuffers(1, &self.id)
+        }
     }
 }
 
@@ -178,7 +183,65 @@ impl Vao {
 impl Drop for Vao {
     fn drop(&mut self) {
         unsafe {
+            // TODO! These can be potentially buggy.
+            // just because we are dropping a vao, doesnt mean its the current bound vao.
+            // we need to find a way to check if this vao is bound currently
+
+            // this goes for every type of buffer that we make
+            // vbo, vao, ebo.. etc
             gl::BindVertexArray(0);
+            gl::DeleteVertexArrays(1, &self.id);
+        }
+    }
+}
+
+pub struct Ebo {
+    id: u32,
+}
+
+impl Ebo {
+    pub fn new() -> Self {
+        Self {
+            id: unsafe {
+                let mut id = 0;
+                gl::GenBuffers(1, &mut id);
+                id
+            },
+        }
+    }
+
+    pub fn bind(&self) {
+        unsafe {
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.id);
+        }
+    }
+
+    pub fn gen_incices<T: PartialEq>(&self, data: &Vec<T>) {
+        if data.len() == 0 {
+            return;
+        }
+
+        let mut indices = Vec::new();
+
+        let last = &data[0];
+
+        for i in 0..data.len() {
+
+            
+
+            indices.push(i)
+
+
+            last = i;
+        }
+    }
+}
+
+impl Drop for Ebo {
+    fn drop(&mut self) {
+        unsafe {
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+            gl::DeleteBuffers(1, &self.id)
         }
     }
 }
