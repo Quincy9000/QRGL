@@ -1,4 +1,6 @@
+use std::collections::HashMap;
 use std::ffi::{CStr, CString};
+use std::hash::Hash;
 
 pub trait Bindable {
     fn bind(&self);
@@ -197,6 +199,7 @@ impl Drop for Vao {
 
 pub struct Ebo {
     id: u32,
+    size: usize,
 }
 
 impl Ebo {
@@ -207,6 +210,7 @@ impl Ebo {
                 gl::GenBuffers(1, &mut id);
                 id
             },
+            size: 0,
         }
     }
 
@@ -216,24 +220,47 @@ impl Ebo {
         }
     }
 
-    pub fn gen_incices<T: PartialEq>(&self, data: &Vec<T>) {
-        if data.len() == 0 {
-            return;
+    pub fn set_data(&mut self, data: &Vec<u32>) {
+        self.bind();
+        self.size = std::mem::size_of::<u32>() * data.len();
+        unsafe {
+            gl::BufferData(
+                gl::ELEMENT_ARRAY_BUFFER,
+                self.size as isize,
+                data.as_ptr() as *const _,
+                gl::STATIC_DRAW,
+            )
         }
+    }
 
+    pub fn gen_indices<T>(&self, data: &Vec<T>) -> Vec<u32>
+    where
+        T: Copy,
+    {
         let mut indices = Vec::new();
+
+        if data.len() == 0 {
+            return indices;
+        }
 
         let last = &data[0];
 
+        let mut map = HashMap::<u32, T>::new();
+
         for i in 0..data.len() {
-
-            
-
-            indices.push(i)
-
-
-            last = i;
+            map.insert(i as u32, data[i]);
         }
+
+        for i in 0..data.len() {
+            let kv = map.get_key_value(&(i as u32));
+            if let Some(index) = kv {
+                indices.push(*index.0);
+            }
+        }
+
+        println!("{indices:?}");
+
+        indices
     }
 }
 
@@ -378,6 +405,7 @@ impl Default for Material {
 pub struct DrawStream {
     vao: Vao,
     vbo: Vbo,
+    ebo: Ebo,
 }
 
 impl DrawStream {
@@ -387,18 +415,35 @@ impl DrawStream {
 
         // 2 because its 2d, each vertex is xy, but this wont be the case if we store color date in each vertex as well
         // it should be : get_size() / vertex.size()
-        let size = self.vbo.get_size() as i32 / 2;
+        // let size = self.vbo.get_size() as i32 / 2;
         unsafe {
-            gl::DrawArrays(gl::TRIANGLES, 0, size);
+            //gl::DrawArrays(gl::TRIANGLES, 0, size);
+            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, std::ptr::null());
         }
     }
 }
 
 impl<T: Shape> From<T> for DrawStream {
     fn from(mut s: T) -> Self {
+        // step0: bind vao
         let mut vao = Vao::new_bind();
-        let mut vbo = Vbo::new_bind_buffer(&s.get_arrays());
+
+        // step1: get verts
+        let mut verts = s.get_arrays();
+
+        // step2: make ebo indices from verts
+        let mut ebo = Ebo::new();
+
+        // step3: get indice list from verts
+        // let indices = vec![0, 1, 3, 1, 2, 3]; hard coded way
+        let indices = ebo.gen_indices(&verts);
+        ebo.set_data(&indices);
+
+        // step4: remove duplicate verts
+        let mut vbo = Vbo::new_bind_buffer(&verts);
         s.set_attributes(&mut vbo, &mut vao);
-        Self { vbo, vao }
+
+        // step5: return
+        Self { vbo, vao, ebo }
     }
 }
