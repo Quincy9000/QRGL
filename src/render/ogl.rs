@@ -233,35 +233,64 @@ impl Ebo {
         }
     }
 
-    pub fn gen_indices<T>(&self, data: &Vec<T>) -> Vec<u32>
+    // need to add chunks
+    fn gen_indices<T>(&self, data: &Vec<T>) -> GenBufferArrays<T>
     where
-        T: Copy,
+        T: Copy + PartialEq,
     {
-        let mut indices = Vec::new();
+        let mut iv = Vec::<IndexValue<T>>::new();
 
-        if data.len() == 0 {
-            return indices;
-        }
-
-        let last = &data[0];
-
-        let mut map = HashMap::<u32, T>::new();
+        // step 1: make iv
+        // no dups in iv, makes making the vbo easier
 
         for i in 0..data.len() {
-            map.insert(i as u32, data[i]);
-        }
-
-        for i in 0..data.len() {
-            let kv = map.get_key_value(&(i as u32));
-            if let Some(index) = kv {
-                indices.push(*index.0);
+            let d = data[i];
+            let temp_iv = IndexValue {
+                index: i as u32,
+                val: d,
+            };
+            if !iv.contains(&temp_iv) {
+                iv.push(temp_iv);
             }
         }
 
-        println!("{indices:?}");
+        let mut vbo_buffer = Vec::with_capacity(iv.len()); // size of vbo with no dups
+        let mut ebo_buffer = Vec::with_capacity(data.len()); // will be size of vbo
 
-        indices
+        // step 2 fill ebo
+        for i in 0..data.len() {
+            let d = data[i];
+            if let Some(found) = iv.iter().find(|find| find.val == d) {
+                ebo_buffer.push(found.index);
+            }
+        }
+
+        vbo_buffer.extend(iv.iter().map(|iv| iv.val));
+
+        GenBufferArrays {
+            vbo_buffer,
+            ebo_buffer,
+        }
     }
+}
+
+struct IndexValue<T> {
+    index: u32,
+    val: T,
+}
+
+impl<T: PartialEq> PartialEq for IndexValue<T> {
+    fn eq(&self, other: &Self) -> bool {
+        // we dont care about the index, we just want to compare the val
+        // it might be a float, but thats ok. We assume that they will not be nan here
+        // because these values should be comming in from an editor
+        self.val == other.val
+    }
+}
+
+struct GenBufferArrays<T> {
+    vbo_buffer: Vec<T>,
+    ebo_buffer: Vec<u32>,
 }
 
 impl Drop for Ebo {
@@ -436,11 +465,14 @@ impl<T: Shape> From<T> for DrawStream {
 
         // step3: get indice list from verts
         // let indices = vec![0, 1, 3, 1, 2, 3]; hard coded way
-        let indices = ebo.gen_indices(&verts);
-        ebo.set_data(&indices);
+        let GenBufferArrays {
+            ebo_buffer,
+            vbo_buffer,
+        } = ebo.gen_indices(&verts);
+        ebo.set_data(&ebo_buffer);
 
         // step4: remove duplicate verts
-        let mut vbo = Vbo::new_bind_buffer(&verts);
+        let mut vbo = Vbo::new_bind_buffer(&vbo_buffer);
         s.set_attributes(&mut vbo, &mut vao);
 
         // step5: return
