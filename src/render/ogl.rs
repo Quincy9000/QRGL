@@ -234,7 +234,7 @@ impl Ebo {
     }
 
     // need to add chunks
-    fn gen_indices<T>(&self, data: &Vec<T>) -> GenBufferArrays<T>
+    fn gen_indices<T, const CHUNK: usize>(&self, data: &Vec<T>) -> GenBufferArrays<T>
     where
         T: Copy + PartialEq,
     {
@@ -243,8 +243,8 @@ impl Ebo {
         // step 1: make iv
         // no dups in iv, makes making the vbo easier
 
-        for i in 0..data.len() {
-            let d = data[i];
+        for (i, &[CHUNK]) in data.iter().array_chunks::<CHUNK>() {
+            let d = [];
             let temp_iv = IndexValue {
                 index: i as u32,
                 val: d,
@@ -265,6 +265,7 @@ impl Ebo {
             }
         }
 
+        // step 3 copy verts to new vbo_buffer
         vbo_buffer.extend(iv.iter().map(|iv| iv.val));
 
         GenBufferArrays {

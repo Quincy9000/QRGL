@@ -1,6 +1,7 @@
 #![allow(unused)]
 #![allow(incomplete_features)]
 #![feature(generic_const_exprs)]
+#![feature(iter_next_chunk)]
 
 pub mod math;
 pub mod render;
