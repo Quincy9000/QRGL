@@ -247,7 +247,7 @@ impl Ebo {
 
         for (i, chunk) in data.array_chunks::<CHUNK>().enumerate() {
             // SAFETY: wtf... I just need to copy the [&T; CHUNK] to [T; CHUNK]
-            // without initializing the [T; CHUNK] first
+            // because I cant initialize the [T; CHUNK] first
             // ... not sure what to do here
             // https://d3m3vilurr.gitbooks.io/the-unsafe-rust-programming-language/content/uninitialized.html
             // this seems safe because its just plain ol data
