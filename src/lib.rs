@@ -2,6 +2,10 @@
 #![allow(incomplete_features)]
 #![feature(generic_const_exprs)]
 #![feature(iter_next_chunk)]
+#![feature(iter_array_chunks)]
+#![feature(iter_collect_into)]
+#![feature(array_chunks)]
+#![feature(maybe_uninit_uninit_array, maybe_uninit_slice)]
 
 pub mod math;
 pub mod render;
@@ -22,27 +26,27 @@ fn test_window() {
 
     let mut draws = Vec::<(DrawStream, Material)>::new();
 
-    let mut sq = Square::new(vec2(-0.25, -0.95), vec2(0.5, 0.6));
+    let mut sq = Square::new(vec2(-0.25, -0.9), vec2(0.5, 0.5));
     let d1 = DrawStream::from(sq);
 
-    // let mut ci = Circle::new(vec2(0., 0.3), 0.3);
-    // let d2 = DrawStream::from(ci);
+    let mut ci = Circle::new(vec2(0., 0.3), 0.3);
+    let d2 = DrawStream::from(ci);
 
-    // let mut tri = Triangle::new(vec2(0., 0.9), vec2(-0.5, 0.4), vec2(0.5, 0.4));
-    // let d3 = DrawStream::from(tri);
+    let mut tri = Triangle::new(vec2(0., 0.9), vec2(-0.5, 0.4), vec2(0.5, 0.4));
+    let d3 = DrawStream::from(tri);
 
     let mut mat1 = Material::default();
     mat1.set_color(Color::rgb(255, 255, 0));
 
-    // let mut mat2 = Material::default();
-    // mat2.set_color(Color::rgb(0, 255, 255));
+    let mut mat2 = Material::default();
+    mat2.set_color(Color::rgb(0, 255, 255));
 
-    // let mut mat3 = Material::default();
-    // mat3.set_color(Color::rgb(255, 0, 255));
+    let mut mat3 = Material::default();
+    mat3.set_color(Color::rgb(255, 0, 255));
 
     draws.push((d1, mat1));
-    // draws.push((d2, mat2));
-    // draws.push((d3, mat3));
+    draws.push((d2, mat2));
+    draws.push((d3, mat3));
 
     while !window.should_close() {
         while let Some(e) = window.events() {

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::hash::Hash;
+use std::iter::FromIterator;
 
 pub trait Bindable {
     fn bind(&self);
@@ -234,33 +235,40 @@ impl Ebo {
     }
 
     // need to add chunks
-    fn gen_indices<T, const CHUNK: usize>(&self, data: &Vec<T>) -> GenBufferArrays<T>
+    fn gen_indices<T, const CHUNK: usize>(&self, data: &Vec<T>) -> GenBufferArrays<T, CHUNK>
     where
-        T: Copy + PartialEq,
+        T: Copy + PartialEq + std::fmt::Debug,
     {
-        let mut iv = Vec::<IndexValue<T>>::new();
+        assert!(CHUNK != 0);
+        let mut iv = Vec::<IndexValue<[T; CHUNK]>>::new();
 
         // step 1: make iv
         // no dups in iv, makes making the vbo easier
 
-        for (i, &[CHUNK]) in data.iter().array_chunks::<CHUNK>() {
-            let d = [];
+        for (i, chunk) in data.array_chunks::<CHUNK>().enumerate() {
+            // SAFETY: wtf... I just need to copy the [&T; CHUNK] to [T; CHUNK]
+            // without initializing the [T; CHUNK] first
+            // ... not sure what to do here
+            // https://d3m3vilurr.gitbooks.io/the-unsafe-rust-programming-language/content/uninitialized.html
+            // this seems safe because its just plain ol data
+            let mut copy: [T; CHUNK] = unsafe { std::mem::MaybeUninit::uninit().assume_init() };
+            chunk.clone_into(&mut copy);
             let temp_iv = IndexValue {
                 index: i as u32,
-                val: d,
+                val: copy,
             };
             if !iv.contains(&temp_iv) {
+                println!("{:?}", temp_iv);
                 iv.push(temp_iv);
             }
         }
 
         let mut vbo_buffer = Vec::with_capacity(iv.len()); // size of vbo with no dups
-        let mut ebo_buffer = Vec::with_capacity(data.len()); // will be size of vbo
+        let mut ebo_buffer = Vec::with_capacity(data.len() / CHUNK); // will be size of vbo
 
         // step 2 fill ebo
-        for i in 0..data.len() {
-            let d = data[i];
-            if let Some(found) = iv.iter().find(|find| find.val == d) {
+        for c in data.chunks(CHUNK) {
+            if let Some(found) = iv.iter().find(|find| find.val == c) {
                 ebo_buffer.push(found.index);
             }
         }
@@ -275,6 +283,7 @@ impl Ebo {
     }
 }
 
+#[derive(Debug)]
 struct IndexValue<T> {
     index: u32,
     val: T,
@@ -289,8 +298,8 @@ impl<T: PartialEq> PartialEq for IndexValue<T> {
     }
 }
 
-struct GenBufferArrays<T> {
-    vbo_buffer: Vec<T>,
+struct GenBufferArrays<T, const CHUNK: usize> {
+    vbo_buffer: Vec<[T; CHUNK]>,
     ebo_buffer: Vec<u32>,
 }
 
@@ -469,7 +478,7 @@ impl<T: Shape> From<T> for DrawStream {
         let GenBufferArrays {
             ebo_buffer,
             vbo_buffer,
-        } = ebo.gen_indices(&verts);
+        } = ebo.gen_indices::<_, 2>(&verts);
         ebo.set_data(&ebo_buffer);
 
         // step4: remove duplicate verts

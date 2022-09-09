@@ -53,7 +53,7 @@ impl Shape for Circle {
 
         let res = Circle::resolution();
         let mut v = Vec::new();
-        let step = (std::f32::consts::TAU) / (res as f32);
+        let step = std::f32::consts::TAU / (res as f32);
 
         let len = self.radius;
 
@@ -87,26 +87,17 @@ impl Shape for Circle {
 impl Shape for Square {
     #[rustfmt::skip]
     fn get_arrays(&self) -> Vec<f32> {
-        // without ebo
-        // todo: will optimize this later for using element buffers, for now just two tris
+        // pass raw verts to the vbo, then we can use an algorithm to create unqiue list with ebo's
         vec![
             // firs tri
             self.pos[X], self.pos[Y], 
+            self.pos[X], self.pos[Y] + self.size[Y],
+            self.pos[X] + self.size[X], self.pos[Y],
+            // second try
+            self.pos[X] + self.size[X], self.pos[Y] + self.size[Y],
             self.pos[X] + self.size[X], self.pos[Y],
             self.pos[X], self.pos[Y] + self.size[Y],
-            // second try
-            self.pos[X] + self.size[X], self.pos[Y],
-            self.pos[X] + self.size[X], self.pos[Y] + self.size[Y],
-            self.pos[X], self.pos[Y] + self.size[Y] 
         ]
-        // with ebo only need 4 verts
-        // vec![
-        //     self.pos[X], self.pos[Y],
-        //     self.pos[X] + self.size[X], self.pos[Y],
-        //     self.pos[X] + self.size[X], self.pos[Y] + self.size[Y],
-        //     self.pos[X], self.pos[Y] + self.size[Y],
-        // ]
-        // order: 0, 1, 3, 1, 2, 3
     }
 
     fn set_attributes(&mut self, vbo: &Vbo, vao: &mut Vao) {
